@@ -1,42 +1,49 @@
-declare module 'node-opencv' {
-  // 模板匹配方法常量
-  export const TM_CCOEFF_NORMED: number;
-  export const TM_CCORR_NORMED: number;
-  export const TM_SQDIFF_NORMED: number;
-  export const TM_CCOEFF: number;
-  export const TM_CCORR: number;
-  export const TM_SQDIFF: number;
+/**
+ * This file is part of the William Chan.
+ * @author William Chan <root@williamchan.me>
+ */
 
-  // 图像读取模式常量
-  export const IMREAD_COLOR: number;
-  export const IMREAD_GRAYSCALE: number;
-  export const IMREAD_UNCHANGED: number;
-  export const IMREAD_ANYDEPTH: number;
-  export const IMREAD_ANYCOLOR: number;
+/// <reference types="node" />
 
-  interface Point {
-      x: number;
-      y: number;
-  }
+declare namespace cv {
+    interface Point {
+        x: number;
+        y: number;
+    }
 
-  interface MinMaxLocResult {
-      minVal: number;
-      maxVal: number;
-      minLoc: Point;
-      maxLoc: Point;
-  }
+    interface MinMaxLocResult {
+        minVal: number;
+        maxVal: number;
+        minLoc: Point;
+        maxLoc: Point;
+    }
 
-  export type Mat = {
-      rows: number;
-      cols: number;
-      data: Buffer;
+    interface Mat {
+        rows: number;
+        cols: number;
+        data: Buffer;
 
-      matchTemplateAsync(template: Mat, method: number): Promise<Mat>;
-      minMaxLocAsync(): Promise<MinMaxLocResult>;
-  }
+        matchTemplateAsync(template: Mat, method: number): Promise<Mat>;
+        minMaxLocAsync(): Promise<MinMaxLocResult>;
+    }
 
-  export function imdecodeAsync(buffer: Buffer, flag?: number): Promise<Mat>;
-  export function imreadAsync(filename: string, flag?: number): Promise<Mat>;
+    // 常量定义
+    const TM_CCOEFF_NORMED: number;
+    const TM_CCORR_NORMED: number;
+    const TM_SQDIFF_NORMED: number;
+    const TM_CCOEFF: number;
+    const TM_CCORR: number;
+    const TM_SQDIFF: number;
+
+    const IMREAD_COLOR: number;
+    const IMREAD_GRAYSCALE: number;
+    const IMREAD_UNCHANGED: number;
+    const IMREAD_ANYDEPTH: number;
+    const IMREAD_ANYCOLOR: number;
+
+    // 方法定义
+    function imdecodeAsync(buffer: Buffer, flag?: number): Promise<Mat>;
+    function imreadAsync(filename: string, flag?: number): Promise<Mat>;
 }
 
-export = module;
+export = cv;
