@@ -15,7 +15,9 @@ Napi::Object Matrix::Init(Napi::Env env, Napi::Object exports) {
         InstanceMethod("matchTemplateAsync", &Matrix::MatchTemplateAsync),
         InstanceMethod("minMaxLocAsync", &Matrix::MinMaxLocAsync),
         StaticMethod("imdecodeAsync", &Matrix::ImdecodeAsync),
-        StaticMethod("imreadAsync", &Matrix::ImreadAsync)
+        StaticMethod("imreadAsync", &Matrix::ImreadAsync),
+        InstanceAccessor<&Matrix::GetCols>("cols"),
+        InstanceAccessor<&Matrix::GetRows>("rows")
     });
 
     constructor = Napi::Persistent(func);
@@ -171,4 +173,12 @@ Napi::Value Matrix::MinMaxLocAsync(const Napi::CallbackInfo& info) {
     auto* worker = new OpenCVAsyncWorker<MinMaxResult>(env, executeCallback, resolveCallback);
     worker->Queue();
     return worker->Promise();
+}
+
+Napi::Value Matrix::GetCols(const Napi::CallbackInfo& info) {
+    return Napi::Number::New(info.Env(), mat.cols);
+}
+
+Napi::Value Matrix::GetRows(const Napi::CallbackInfo& info) {
+    return Napi::Number::New(info.Env(), mat.rows);
 }

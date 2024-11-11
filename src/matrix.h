@@ -17,6 +17,8 @@ public:
     static Napi::Value ImdecodeAsync(const Napi::CallbackInfo& info);
     static Napi::Value ImreadAsync(const Napi::CallbackInfo& info);
 
+    Napi::Value GetCols(const Napi::CallbackInfo& info);
+    Napi::Value GetRows(const Napi::CallbackInfo& info);
     Napi::Value MatchTemplateAsync(const Napi::CallbackInfo& info);
     Napi::Value MinMaxLocAsync(const Napi::CallbackInfo& info);
 

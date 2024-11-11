@@ -15,6 +15,9 @@ async function main() {
     const minMax = await matched.minMaxLocAsync();
     const matched2 = await image3.matchTemplateAsync(image4, cv.TM_CCOEFF_NORMED);
     const minMax2 = await matched2.minMaxLocAsync();
+
+    console.log(image1.cols, image3.rows);
+
     console.log(minMax.maxVal * 100, minMax2.maxVal * 100);
   }, 100)
 }
