@@ -26,13 +26,26 @@ public:
             result = executeCallback();
         } catch (const std::exception& e) {
             SetError(e.what());
+        } catch (...) {
+            SetError("An unknown error occurred");
         }
     }
 
     void OnOK() override {
         Napi::HandleScope scope(Env());
-        auto value = resolveCallback(Env(), result);
-        deferred.Resolve(value);
+        try {
+            auto value = resolveCallback(Env(), result);
+            deferred.Resolve(value);
+        } catch (const std::exception& e) {
+            deferred.Reject(Napi::Error::New(Env(), e.what()).Value());
+        } catch (...) {
+            deferred.Reject(Napi::Error::New(Env(), "An unknown error occurred").Value());
+        }
+    }
+
+    void OnError(const Napi::Error& error) override {
+        Napi::HandleScope scope(Env());
+        deferred.Reject(error.Value());
     }
 
     Napi::Promise Promise() {
