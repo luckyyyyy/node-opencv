@@ -16,7 +16,7 @@ async function main() {
     const matched2 = await image3.matchTemplateAsync(image4, cv.TM_CCOEFF_NORMED);
     const minMax2 = await matched2.minMaxLocAsync();
 
-    console.log(image1.cols, image3.rows);
+    console.log(image1.cols, image3.rows, image2.data)
 
     console.log(minMax.maxVal * 100, minMax2.maxVal * 100);
   }, 100)
@@ -26,10 +26,10 @@ main().catch(console.error);
 
 setInterval(() => {
   const used = process.memoryUsage();
-  // console.log({
-  //   rss: `${Math.round(used.rss / 1024 / 1024 * 100) / 100} MB`,
-  //   heapTotal: `${Math.round(used.heapTotal / 1024 / 1024 * 100) / 100} MB`,
-  //   heapUsed: `${Math.round(used.heapUsed / 1024 / 1024 * 100) / 100} MB`,
-  //   external: `${Math.round(used.external / 1024 / 1024 * 100) / 100} MB`,
-  // });
+  console.log({
+    rss: `${Math.round(used.rss / 1024 / 1024 * 100) / 100} MB`,
+    heapTotal: `${Math.round(used.heapTotal / 1024 / 1024 * 100) / 100} MB`,
+    heapUsed: `${Math.round(used.heapUsed / 1024 / 1024 * 100) / 100} MB`,
+    external: `${Math.round(used.external / 1024 / 1024 * 100) / 100} MB`,
+  });
 }, 100);

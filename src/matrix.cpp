@@ -17,7 +17,8 @@ Napi::Object Matrix::Init(Napi::Env env, Napi::Object exports) {
         StaticMethod("imdecodeAsync", &Matrix::ImdecodeAsync),
         StaticMethod("imreadAsync", &Matrix::ImreadAsync),
         InstanceAccessor<&Matrix::GetCols>("cols"),
-        InstanceAccessor<&Matrix::GetRows>("rows")
+        InstanceAccessor<&Matrix::GetRows>("rows"),
+        InstanceAccessor<&Matrix::GetData>("data")
     });
 
     constructor = Napi::Persistent(func);
@@ -175,10 +176,40 @@ Napi::Value Matrix::MinMaxLocAsync(const Napi::CallbackInfo& info) {
     return worker->Promise();
 }
 
+
 Napi::Value Matrix::GetCols(const Napi::CallbackInfo& info) {
     return Napi::Number::New(info.Env(), mat.cols);
 }
 
 Napi::Value Matrix::GetRows(const Napi::CallbackInfo& info) {
     return Napi::Number::New(info.Env(), mat.rows);
+}
+
+Napi::Value Matrix::GetData(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+
+    if (mat.empty()) {
+        return Napi::Buffer<uchar>::New(env, 0);
+    }
+
+    size_t dataSize = mat.total() * mat.elemSize();
+
+    if (dataSize == 0) {
+        return Napi::Buffer<uchar>::New(env, 0);
+
+    }
+
+    uchar* dataCopy = new uchar[dataSize];
+    memcpy(dataCopy, mat.data, dataSize);
+
+    auto finalizeCallback = [](Napi::Env env, uchar* data) {
+        delete[] data;
+    };
+
+    return Napi::Buffer<uchar>::New(
+        env,
+        dataCopy,
+        dataSize,
+        finalizeCallback
+    );
 }

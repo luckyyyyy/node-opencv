@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "OpenCV bindings for Node.js",
   "main": "index.js",
+  "types": "index.d.ts",
   "scripts": {
     "install": "node-gyp rebuild",
     "rebuild": "node-gyp rebuild",
@@ -12,6 +13,7 @@
     "node-addon-api": "^8.2.2"
   },
   "devDependencies": {
+    "@types/node": "^22.9.0",
     "node-gyp": "^10.2.0"
   }
 }

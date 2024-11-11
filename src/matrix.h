@@ -19,6 +19,8 @@ public:
 
     Napi::Value GetCols(const Napi::CallbackInfo& info);
     Napi::Value GetRows(const Napi::CallbackInfo& info);
+    Napi::Value GetData(const Napi::CallbackInfo& info);
+
     Napi::Value MatchTemplateAsync(const Napi::CallbackInfo& info);
     Napi::Value MinMaxLocAsync(const Napi::CallbackInfo& info);
 
