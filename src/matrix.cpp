@@ -14,7 +14,8 @@ Napi::Object Matrix::Init(Napi::Env env, Napi::Object exports) {
     Napi::Function func = DefineClass(env, "Matrix", {
         InstanceMethod("matchTemplateAsync", &Matrix::MatchTemplateAsync),
         InstanceMethod("minMaxLocAsync", &Matrix::MinMaxLocAsync),
-        StaticMethod("imdecodeAsync", &Matrix::ImdecodeAsync)
+        StaticMethod("imdecodeAsync", &Matrix::ImdecodeAsync),
+        StaticMethod("imreadAsync", &Matrix::ImreadAsync)
     });
 
     constructor = Napi::Persistent(func);
@@ -52,6 +53,40 @@ Napi::Value Matrix::ImdecodeAsync(const Napi::CallbackInfo& info) {
         cv::Mat result = cv::imdecode(buffer_data, flags);
         if (result.empty()) {
             throw std::runtime_error("Failed to decode image");
+        }
+        return result;
+    };
+
+    auto resolveCallback = [](Napi::Env env, cv::Mat& result) -> Napi::Value {
+        auto matrix = Matrix::constructor.New({});
+        Matrix* unwrapped = Matrix::Unwrap(matrix);
+        unwrapped->mat = result.clone();
+        return matrix;
+    };
+
+    auto* worker = new OpenCVAsyncWorker<cv::Mat>(env, executeCallback, resolveCallback);
+    worker->Queue();
+    return worker->Promise();
+}
+
+Napi::Value Matrix::ImreadAsync(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+
+    if (info.Length() < 1) {
+        throw Napi::Error::New(env, "Filename argument required");
+    }
+
+    std::string filename = info[0].As<Napi::String>().Utf8Value();
+    int flags = cv::IMREAD_COLOR;
+
+    if (info.Length() > 1 && info[1].IsNumber()) {
+        flags = info[1].As<Napi::Number>().Int32Value();
+    }
+
+    auto executeCallback = [filename, flags]() -> cv::Mat {
+        cv::Mat result = cv::imread(filename, flags);
+        if (result.empty()) {
+            throw std::runtime_error("Failed to load image: " + filename);
         }
         return result;
     };

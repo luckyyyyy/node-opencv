@@ -15,6 +15,8 @@ public:
     cv::Mat mat;
 
     static Napi::Value ImdecodeAsync(const Napi::CallbackInfo& info);
+    static Napi::Value ImreadAsync(const Napi::CallbackInfo& info);
+
     Napi::Value MatchTemplateAsync(const Napi::CallbackInfo& info);
     Napi::Value MinMaxLocAsync(const Napi::CallbackInfo& info);
 

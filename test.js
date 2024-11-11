@@ -5,13 +5,17 @@ async function main() {
   const full = await fs.readFile('./full.jpg');
   const image = await fs.readFile('./1.jpg');
   setInterval(async() => {
-    const [image1, image2] = await Promise.all([
+    const [image1, image2, image3, image4] = await Promise.all([
       cv.imdecodeAsync(full),
       cv.imdecodeAsync(image),
+      cv.imreadAsync('./full.jpg'),
+      cv.imreadAsync('./1.jpg'),
     ]);
     const matched = await image1.matchTemplateAsync(image2, cv.TM_CCOEFF_NORMED);
     const minMax = await matched.minMaxLocAsync();
-    console.log(minMax.maxVal * 100);
+    const matched2 = await image3.matchTemplateAsync(image4, cv.TM_CCOEFF_NORMED);
+    const minMax2 = await matched2.minMaxLocAsync();
+    console.log(minMax.maxVal * 100, minMax2.maxVal * 100);
   }, 100)
 }
 
