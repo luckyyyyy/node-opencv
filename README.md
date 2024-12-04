@@ -6,7 +6,7 @@ This guide helps you properly configure and use the Node.js OpenCV native addon.
 
 - Node.js (14.x or higher recommended)
 - OpenCV (4.x recommended)
-- Python (for node-gyp)
+- Cmake
 - C++ Compiler
   - Windows: Visual Studio 2019 or higher
   - macOS: Xcode Command Line Tools
@@ -35,9 +35,10 @@ Default path: `/usr/local/`
 ## Environment Variables
 
 ### Windows
-```cmd
-set OPENCV_INCLUDE_DIR=C:\opencv\build\include
-set OPENCV_LIB_DIR=C:\opencv\build\x64\vc16\lib
+```powershell
+$Env:OPENCV_INCLUDE_DIR = "D:\opencv\build\include"
+$Env:OPENCV_LIB_DIR = "D:\opencv\build\x64\vc16\lib"
+# and added D:\opencv\build\x64\vc16\bin to system path
 ```
 
 ### macOS
@@ -93,20 +94,6 @@ console.log(minMax.maxVal * 100);
 |---------------|----------------|----------|
 | 4.x           | 14.x+          | ✅       |
 | 3.x           | 12.x+          | ✅       |
-
-## Debugging Tips
-
-### Windows
-```cmd
-set DEBUG=node-gyp
-npm install
-```
-
-### Linux/macOS
-```bash
-DEBUG=node-gyp npm install
-```
-
 
 ## Additional Resources
 

@@ -4,44 +4,67 @@
  */
 #pragma once
 #include <napi.h>
-#include <opencv2/opencv.hpp>
+#include <thread>
 #include <functional>
+#include <future>
+#include "thread_pool.h"
 
-template<typename T>
-class OpenCVAsyncWorker : public Napi::AsyncWorker {
+template<typename Result>
+class AsyncWorker {
 public:
-    using ExecuteCallback = std::function<T()>;
-    using ResolveCallback = std::function<Napi::Value(Napi::Env, T&)>;
+    using ExecuteCallback = std::function<Result()>;
+    using ResolveCallback = std::function<Napi::Value(Napi::Env env, const Result&)>;
 
-    OpenCVAsyncWorker(Napi::Env env,
-                     ExecuteCallback executeCallback,
-                     ResolveCallback resolveCallback)
-        : AsyncWorker(env)
-        , deferred(Napi::Promise::Deferred::New(env))
-        , executeCallback(executeCallback)
-        , resolveCallback(resolveCallback) {}
+    static Napi::Promise Execute(
+        Napi::Env env,
+        ExecuteCallback executeCallback,
+        ResolveCallback resolveCallback
+    ) {
+        Napi::Promise::Deferred deferred = Napi::Promise::Deferred::New(env);
 
-    void Execute() override {
-        try {
-            result = executeCallback();
-        } catch (const std::exception& e) {
-            SetError(e.what());
-        }
-    }
+        auto tsfn = Napi::ThreadSafeFunction::New(
+            env,
+            Napi::Function::New(env, [](const Napi::CallbackInfo& info){}),
+            "AsyncWorker",
+            0,
+            1
+        );
 
-    void OnOK() override {
-        Napi::HandleScope scope(Env());
-        auto value = resolveCallback(Env(), result);
-        deferred.Resolve(value);
-    }
+        static ThreadPool& pool = ThreadPool::getInstance();
 
-    Napi::Promise Promise() {
+        pool.enqueue([
+            executeCallback = std::move(executeCallback),
+            resolveCallback = std::move(resolveCallback),
+            tsfn,
+            deferred
+        ]() {
+            try {
+                Result result = executeCallback();
+
+                auto callback = [
+                    result = std::move(result),
+                    resolveCallback = std::move(resolveCallback),
+                    deferred
+                ](Napi::Env env, Napi::Function) {
+                    try {
+                        Napi::Value jsResult = resolveCallback(env, result);
+                        deferred.Resolve(jsResult);
+                    } catch (const std::exception& e) {
+                        deferred.Reject(Napi::Error::New(env, e.what()).Value());
+                    }
+                };
+
+                tsfn.BlockingCall(callback);
+            } catch (const std::exception& e) {
+                auto callback = [e = std::string(e.what()), deferred](Napi::Env env, Napi::Function) {
+                    deferred.Reject(Napi::Error::New(env, e).Value());
+                };
+                tsfn.BlockingCall(callback);
+            }
+
+            tsfn.Release();
+        });
+
         return deferred.Promise();
     }
-
-private:
-    Napi::Promise::Deferred deferred;
-    ExecuteCallback executeCallback;
-    ResolveCallback resolveCallback;
-    T result;
 };
