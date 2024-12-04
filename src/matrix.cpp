@@ -23,7 +23,8 @@ Napi::Object Matrix::Init(Napi::Env env, Napi::Object exports) {
 
         InstanceAccessor<&Matrix::GetCols>("cols"),
         InstanceAccessor<&Matrix::GetRows>("rows"),
-        InstanceAccessor<&Matrix::GetData>("data")
+        InstanceAccessor<&Matrix::GetData>("data"),
+        InstanceAccessor<&Matrix::GetSize>("size")
     });
 
     constructor = Napi::Persistent(func);
@@ -287,6 +288,16 @@ Napi::Value Matrix::GetCols(const Napi::CallbackInfo& info) {
 Napi::Value Matrix::GetRows(const Napi::CallbackInfo& info) {
     return Napi::Number::New(info.Env(), mat.rows);
 }
+
+Napi::Value Matrix::GetSize(const Napi::CallbackInfo& info) {
+    Napi::Env env = info.Env();
+    auto size = mat.size();
+    auto obj = Napi::Object::New(env);
+    obj.Set("width", Napi::Number::New(env, size.width));
+    obj.Set("height", Napi::Number::New(env, size.height));
+    return obj;
+}
+
 
 Napi::Value Matrix::GetData(const Napi::CallbackInfo& info) {
     Napi::Env env = info.Env();

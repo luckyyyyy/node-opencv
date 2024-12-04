@@ -22,6 +22,10 @@ declare namespace cv {
         rows: number;
         cols: number;
         data: Buffer;
+        size: {
+            width: number;
+            height: number;
+        }
         matchTemplate(template: Mat, method: number): Mat;
         matchTemplateAsync(template: Mat, method: number): Promise<Mat>;
         minMaxLocAsync(): Promise<MinMaxLocResult>;

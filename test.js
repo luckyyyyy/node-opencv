@@ -25,6 +25,7 @@ async function main() {
     // console.log(image1.cols, image3.rows, image2.data)
 
     // console.log(minMax.maxVal * 100);
+    console.log(image2.size)
     matched.release();
     // matched2.release();
     image1.release();
