@@ -4,6 +4,10 @@
   "description": "OpenCV bindings for Node.js",
   "main": "index.js",
   "types": "index.d.ts",
+  "files": [
+    "build/Release/node-opencv.node",
+    "index.d.ts"
+  ],
   "scripts": {
     "prepare": "npm run build",
     "build": "cmake-js rebuild --clean -d",
