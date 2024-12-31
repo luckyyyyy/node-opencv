@@ -1,5 +1,11 @@
-const cv = require('./index.js');
+const cv = require('../index.js');
 const fs = require('fs/promises');
+const { Worker } = require('worker_threads');
+const path = require('path');
+
+function createWorker() {
+  return new Worker(path.join(__dirname, 'worker.js'));
+}
 
 async function main() {
   const full = await fs.readFile('./demo/full.jpg');
@@ -9,7 +15,8 @@ async function main() {
   } catch (error) {
     console.log(1,error.message)
   }
-    // // const a =  cv.imdecode(full)
+  setInterval(async () => {
+        // // const a =  cv.imdecode(full)
     // a.release()
     const [image1, image2, image3, image4] = await Promise.all([
       cv.imdecodeAsync(full),
@@ -22,7 +29,7 @@ async function main() {
     const minMax = await matched.minMaxLocAsync();
     // const matched2 = await image3.matchTemplateAsync(image4, cv.TM_CCOEFF_NORMED);
     // const minMax2 = await matched2.minMaxLocAsync();
-    // console.log(image1.cols, image3.rows, image2.data)
+    console.log(image1.cols, image3.rows, image2.data, minMax)
 
     // console.log(minMax.maxVal * 100);
     console.log(image2.size)
@@ -41,9 +48,14 @@ async function main() {
     // c.release();
     // a.release();
 
+  }, 1000);
 }
 
 main().catch(console.error);
+
+for (let i = 0; i < 5; i++) {
+  createWorker();
+}
 
 setInterval(() => {
   const used = process.memoryUsage();

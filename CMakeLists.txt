@@ -14,8 +14,9 @@ set(OPENCV_LIB_DIR $ENV{OPENCV_LIB_DIR})
 set(NODE_ADDON_API_DIR ${CMAKE_SOURCE_DIR}/node_modules/node-addon-api)
 
 set(SOURCE_FILES
-    src/main.cpp
-    src/matrix.cpp
+    src/main.cc
+    src/image_io.cc
+    src/mat.cc
 )
 
 add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES})

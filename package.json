@@ -11,7 +11,7 @@
   "scripts": {
     "prepare": "npm run build",
     "build": "cmake-js rebuild --clean -d",
-    "test": "node test.js"
+    "test": "node demo/test.js"
   },
   "dependencies": {
     "node-addon-api": "^8.2.2"
