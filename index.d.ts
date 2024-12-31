@@ -40,12 +40,19 @@ declare namespace cv {
     const TM_CCORR: number;
     const TM_SQDIFF: number;
 
-    const IMREAD_COLOR: number;
-    const IMREAD_GRAYSCALE: number;
     const IMREAD_UNCHANGED: number;
+    const IMREAD_GRAYSCALE: number;
+    const IMREAD_COLOR: number;
     const IMREAD_ANYDEPTH: number;
     const IMREAD_ANYCOLOR: number;
-
+    const IMREAD_LOAD_GDAL: number;
+    const IMREAD_REDUCED_GRAYSCALE_2: number;
+    const IMREAD_REDUCED_COLOR_2: number;
+    const IMREAD_REDUCED_GRAYSCALE_4: number;
+    const IMREAD_REDUCED_COLOR_4: number;
+    const IMREAD_REDUCED_GRAYSCALE_8: number;
+    const IMREAD_REDUCED_COLOR_8: number;
+    const IMREAD_IGNORE_ORIENTATION: number;
     // static methods
     function imdecodeAsync(buffer: Buffer, flag?: number): Promise<Mat>;
     function imreadAsync(filename: string, flag?: number): Promise<Mat>;
