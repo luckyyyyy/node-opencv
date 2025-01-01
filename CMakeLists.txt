@@ -17,6 +17,7 @@ set(SOURCE_FILES
     src/main.cc
     src/image_io.cc
     src/mat.cc
+    src/utility.cc
 )
 
 add_library(${PROJECT_NAME} SHARED ${SOURCE_FILES})

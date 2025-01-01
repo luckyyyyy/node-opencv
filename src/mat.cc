@@ -4,36 +4,11 @@
  */
 #include "mat.h"
 #include "worker.h"
-#include "common.h"
+#include "utility.h"
 
 struct MatData {
     Napi::FunctionReference constructor;
 };
-
-Napi::FunctionReference Mat::constructor;
-
-Napi::Object Mat::Init(Napi::Env env, Napi::Object exports) {
-
-    Napi::Function func = DefineClass(env, "Mat", {
-        InstanceMethod("matchTemplateAsync", &Mat::MatchTemplateAsync),
-        InstanceMethod("minMaxLocAsync", &Mat::MinMaxLocAsync),
-        InstanceMethod("release", &Mat::Release),
-        InstanceAccessor<&Mat::GetCols>("cols"),
-        InstanceAccessor<&Mat::GetRows>("rows"),
-        InstanceAccessor<&Mat::GetData>("data"),
-        InstanceAccessor<&Mat::GetSize>("size")
-
-    });
-
-    MatData* data = new MatData();
-    data->constructor = Napi::Persistent(func);
-    data->constructor.SuppressDestruct();
-
-    env.SetInstanceData<MatData>(data);
-
-    exports.Set("Mat", func);
-    return exports;
-}
 
 Mat::Mat(const Napi::CallbackInfo& info)
     : Napi::ObjectWrap<Mat>(info) {}
@@ -93,22 +68,22 @@ Napi::Value Mat::MinMaxLocAsync(const Napi::CallbackInfo& info) {
     };
 
     auto ok = [](Napi::Env env, std::tuple<double, double, cv::Point, cv::Point>& result) -> Napi::Value {
-        Napi::Object jsResult = Napi::Object::New(env);
+        Napi::Object obj = Napi::Object::New(env);
 
-        jsResult.Set("minVal", std::get<0>(result));
-        jsResult.Set("maxVal", std::get<1>(result));
+        obj.Set("minVal", std::get<0>(result));
+        obj.Set("maxVal", std::get<1>(result));
 
         Napi::Object minLoc = Napi::Object::New(env);
         minLoc.Set("x", std::get<2>(result).x);
         minLoc.Set("y", std::get<2>(result).y);
-        jsResult.Set("minLoc", minLoc);
+        obj.Set("minLoc", minLoc);
 
         Napi::Object maxLoc = Napi::Object::New(env);
         maxLoc.Set("x", std::get<3>(result).x);
         maxLoc.Set("y", std::get<3>(result).y);
-        jsResult.Set("maxLoc", maxLoc);
+        obj.Set("maxLoc", maxLoc);
 
-        return jsResult;
+        return obj;
     };
 
     auto* worker = new AsyncWorker<std::tuple<double, double, cv::Point, cv::Point>>(env, execute, ok);
@@ -157,4 +132,27 @@ Napi::Value Mat::GetData(const Napi::CallbackInfo& info) {
         mat.data,
         dataSize
     );
+}
+
+Napi::Object Mat::Exports(Napi::Env env, Napi::Object exports) {
+
+    Napi::Function func = DefineClass(env, "Mat", {
+        InstanceMethod("matchTemplateAsync", &Mat::MatchTemplateAsync),
+        InstanceMethod("minMaxLocAsync", &Mat::MinMaxLocAsync),
+        InstanceMethod("release", &Mat::Release),
+        InstanceAccessor<&Mat::GetCols>("cols"),
+        InstanceAccessor<&Mat::GetRows>("rows"),
+        InstanceAccessor<&Mat::GetData>("data"),
+        InstanceAccessor<&Mat::GetSize>("size")
+
+    });
+
+    MatData* data = new MatData();
+    data->constructor = Napi::Persistent(func);
+    data->constructor.SuppressDestruct();
+
+    env.SetInstanceData<MatData>(data);
+
+    exports.Set("Mat", func);
+    return exports;
 }

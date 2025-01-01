@@ -4,14 +4,20 @@
  */
 #include "image_io.h"
 #include "mat.h"
+#include "utility.h"
 
 Napi::Object Init(Napi::Env env, Napi::Object exports) {
-    Mat::Init(env, exports);
+    Mat::Exports(env, exports);
     exports.Set("imreadAsync", Napi::Function::New(env, image::ImreadAsync));
     exports.Set("imread", Napi::Function::New(env, image::Imread));
     exports.Set("imdecodeAsync", Napi::Function::New(env, image::ImdecodeAsync));
     exports.Set("imdecode", Napi::Function::New(env, image::Imdecode));
 
+    exports.Set("getBuildInformation", Napi::Function::New(env, utility::GetBuildInformation));
+    exports.Set("getTickCount", Napi::Function::New(env, utility::GetTickCount));
+    exports.Set("getTickFrequency", Napi::Function::New(env, utility::GetTickFrequency));
+
+    exports.Set(Napi::String::New(env, "CV_VERSION"), Napi::String::New(env, CV_VERSION));
     exports.Set(Napi::String::New(env, "TM_SQDIFF"), Napi::Number::New(env, cv::TM_SQDIFF));
     exports.Set(Napi::String::New(env, "TM_SQDIFF_NORMED"), Napi::Number::New(env, cv::TM_SQDIFF_NORMED));
     exports.Set(Napi::String::New(env, "TM_CCORR"), Napi::Number::New(env, cv::TM_CCORR));

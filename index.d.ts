@@ -32,6 +32,7 @@ declare namespace cv {
         release(): void;
     }
 
+    const CV_VERSION: string;
     // constants
     const TM_CCOEFF_NORMED: number;
     const TM_CCORR_NORMED: number;
@@ -53,11 +54,15 @@ declare namespace cv {
     const IMREAD_REDUCED_GRAYSCALE_8: number;
     const IMREAD_REDUCED_COLOR_8: number;
     const IMREAD_IGNORE_ORIENTATION: number;
-    // static methods
+
     function imdecodeAsync(buffer: Buffer, flag?: number): Promise<Mat>;
     function imreadAsync(filename: string, flag?: number): Promise<Mat>;
     function imdecode(buffer: Buffer, flag?: number): Mat;
     function imread(filename: string, flag?: number): Mat;
+
+    function getBuildInformation(): string;
+    function getTickCount(): number;
+    function getTickFrequency(): number;
 }
 
 export = cv;

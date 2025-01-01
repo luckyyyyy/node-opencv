@@ -1,4 +1,4 @@
-const { parentPort } = require('worker_threads');
+const { parentPort, threadId } = require('worker_threads');
 const cv = require('../index.js');
 const fs = require('fs/promises');
 
@@ -16,7 +16,8 @@ async function workerTask() {
 
     const matched = await image1.matchTemplateAsync(image2, cv.TM_CCOEFF_NORMED);
     const minMax = await matched.minMaxLocAsync();
-    console.log(minMax);
+    // console.log(minMax);
+    console.log('worker: ' + threadId, image2.size, minMax.maxVal * 100);
 
     // parentPort.postMessage({
     //   size: image2.size,
