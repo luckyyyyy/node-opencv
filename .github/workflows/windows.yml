@@ -1,4 +1,4 @@
-name: windows Build Test
+name: Windows Build Test
 
 on:
   push:
@@ -23,10 +23,10 @@ jobs:
 
     - name: Download and Install OpenCV
       run: |
-        $opencvVersion = "4.10.0"
+        $opencvVersion = "4.8.0"
         $downloadUrl = "https://github.com/opencv/opencv/releases/download/$opencvVersion/opencv-$opencvVersion-windows.exe"
         Invoke-WebRequest -Uri $downloadUrl -OutFile "opencv-windows.exe"
-        Start-Process -FilePath "opencv-windows.exe" -ArgumentList "-y" -Wait
+        Start-Process -FilePath "opencv-windows.exe" -ArgumentList "-y", "-o", "D:" -Wait
 
     - name: Set Environment Variables
       run: |
