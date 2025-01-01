@@ -23,7 +23,7 @@ jobs:
 
     - name: Download and Install OpenCV
       run: |
-        $opencvVersion = "4.8.0"
+        $opencvVersion = "4.10.0"
         $downloadUrl = "https://github.com/opencv/opencv/releases/download/$opencvVersion/opencv-$opencvVersion-windows.exe"
         Invoke-WebRequest -Uri $downloadUrl -OutFile "opencv-windows.exe"
         Start-Process -FilePath "opencv-windows.exe" -ArgumentList "-y -o`"D:`"" -Wait
@@ -33,7 +33,6 @@ jobs:
         echo "OPENCV_INCLUDE_DIR=D:\opencv\build\include" | Out-File -FilePath $env:GITHUB_ENV -Append
         echo "OPENCV_LIB_DIR=D:\opencv\build\x64\vc16\lib" | Out-File -FilePath $env:GITHUB_ENV -Append
         echo "D:\opencv\build\x64\vc16\bin" | Out-File -FilePath $env:GITHUB_PATH -Append
-        dir D:\opencv\build\x64\vc16\lib
 
     - name: Install dependencies and build
       run: npm install
