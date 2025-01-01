@@ -64,8 +64,8 @@ npm install
 ```javascript
 const addon = require('node-opencv');
 const [image1, image2] = await Promise.all([
-  cv.imdecodeAsync(full),
-  cv.imdecodeAsync(image),
+  cv.imdecodeAsync('demo/full.jpg'),
+  cv.imdecodeAsync('demo/1.jpg'),
 ]);
 const matched = await image1.matchTemplateAsync(image2, cv.TM_CCOEFF_NORMED);
 const minMax = await matched.minMaxLocAsync();
