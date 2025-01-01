@@ -27,6 +27,8 @@ jobs:
         $downloadUrl = "https://github.com/opencv/opencv/releases/download/$opencvVersion/opencv-$opencvVersion-windows.exe"
         Invoke-WebRequest -Uri $downloadUrl -OutFile "opencv-windows.exe"
         Start-Process -FilePath "opencv-windows.exe" -ArgumentList "-y -o`"D:`"" -Wait
+        dir D:
+        dir D:\opencv
 
     - name: Set Environment Variables
       run: |
