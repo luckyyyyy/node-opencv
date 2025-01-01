@@ -79,3 +79,6 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
     PREFIX ""
     SUFFIX ".node"
 )
+
+add_definitions(-DNODE_ADDON_API_CPP_EXCEPTIONS)
+add_definitions(-DNODE_ADDON_API_CPP_EXCEPTIONS_ALL)

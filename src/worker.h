@@ -4,14 +4,12 @@
  */
 #pragma once
 #include <napi.h>
-#include <functional>
-#include <utility>
 
-template <typename R>
+template <typename Result>
 class AsyncWorker : public Napi::AsyncWorker {
 public:
-    using ExecuteFn = std::function<R()>;
-    using Ok = std::function<Napi::Value(Napi::Env, R&)>;
+    using ExecuteFn = std::function<Result()>;
+    using Ok = std::function<Napi::Value(Napi::Env, Result&)>;
 
     AsyncWorker(Napi::Env env, ExecuteFn execute, Ok convFunc)
         : Napi::AsyncWorker(env), deferred(Napi::Promise::Deferred::New(env)),
@@ -42,5 +40,5 @@ private:
     Napi::Promise::Deferred deferred;
     ExecuteFn execute;
     Ok convFunc;
-    R result;
+    Result result;
 };

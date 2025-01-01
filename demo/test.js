@@ -54,8 +54,7 @@ for (let i = 0; i < 5; i++) {
   createWorker();
 }
 
-setInterval(() => {
-  const used = process.memoryUsage();
-
-  console.log(`${Math.round(used.rss / 1024 / 1024 * 100) / 100} MB`)
-}, 1000);
+// setTimeout(() => {
+//   const used = process.memoryUsage();
+//   console.log(`${Math.round(used.rss / 1024 / 1024 * 100) / 100} MB`)
+// }, 1000);

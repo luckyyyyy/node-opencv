@@ -29,6 +29,7 @@ async function workerTask() {
     image2.release();
     image3.release();
     image4.release();
+    process.exit();
   } catch (error) {
     parentPort.postMessage({ error: error.message });
   }
