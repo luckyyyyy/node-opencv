@@ -49,15 +49,15 @@ export OPENCV_LIB_DIR=/opt/homebrew/Cellar/opencv/4.10.0_12/lib
 
 ### Linux
 ```bash
-export OPENCV_INCLUDE_DIR=/usr/local/include/opencv4
-export OPENCV_LIB_DIR=/usr/local/lib
+export OPENCV_INCLUDE_DIR=/usr/include/opencv4
+export OPENCV_LIB_DIR=/usr/lib/x86_64-linux-gnu
 ```
 
 ## Building and Running
 
 1. Build native module:
 ```bash
-yarn install
+npm install
 ```
 
 2. Use in JavaScript:
@@ -70,6 +70,8 @@ const [image1, image2] = await Promise.all([
 const matched = await image1.matchTemplateAsync(image2, cv.TM_CCOEFF_NORMED);
 const minMax = await matched.minMaxLocAsync();
 console.log(minMax.maxVal * 100);
+console.log(cv.getBuildInformation());
+
 ```
 
 ## Common Issues
