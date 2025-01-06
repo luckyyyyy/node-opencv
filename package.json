@@ -1,0 +1,28 @@
+{
+  "name": "node-opencv-rs",
+  "version": "1.0.0",
+  "main": "main.js",
+  "types": "main.d.ts",
+  "napi": {
+    "name": "node-opencv-rs",
+    "triples": {}
+  },
+  "files": [
+    "node-opencv-rs.node",
+    "main.d.ts"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "@napi-rs/cli": "^2.18.4"
+  },
+  "engines": {
+    "node": ">= 18"
+  },
+  "scripts": {
+    "prepare": "npm run build",
+    "build": "napi build --release",
+    "build:debug": "napi build --platform",
+    "test": "node demo/test.js"
+  },
+  "packageManager": "yarn@4.6.0"
+}
