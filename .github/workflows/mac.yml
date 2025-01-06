@@ -1,0 +1,46 @@
+name: macOS Build Test
+
+on:
+  push:
+    branches: [ rust ]
+  pull_request:
+    branches: [ rust ]
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+          node-version: '22'
+          cache: 'npm'
+
+    - name: Setup Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        override: true
+
+    - name: Install system dependencies
+      run: |
+        brew update
+        brew install cmake opencv llvm
+
+    - name: Set LIBCLANG_PATH
+      run: echo "LIBCLANG_PATH=$(brew --prefix llvm)/lib" >> $GITHUB_ENV
+
+    - name: Build
+      uses: actions-rs/cargo@v1
+      with:
+        command: build
+        args: --release --all-features
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Test
+      run: npm run test
