@@ -25,6 +25,8 @@ export const IMREAD_IGNORE_ORIENTATION: number
 export declare function getTickFrequency(): number
 export declare function getBuildInformation(): string
 export declare function getTickCount(): number
+export declare function imencode(ext: string, img: JSMat): Buffer
+export declare function imencodeCallback(ext: string, mat: JSMat, callback: (...args: any[]) => any): void
 export declare function imread(path: string, flags?: number | undefined | null): JSMat
 export declare function imreadCallback(path: string, callback: (...args: any[]) => any): void
 export declare function imdecode(buffer: Buffer): JSMat
@@ -33,13 +35,21 @@ export interface Size {
   width: number
   height: number
 }
+export interface Point {
+  x: number
+  y: number
+}
+export interface Rect {
+  x: number
+  y: number
+  width: number
+  height: number
+}
 export interface MinMaxResult {
   minVal: number
   maxVal: number
-  minX: number
-  minY: number
-  maxX: number
-  maxY: number
+  minLoc: Point
+  maxLoc: Point
 }
 export type JSMat = Mat
 export declare class Mat {
@@ -50,5 +60,12 @@ export declare class Mat {
   get data(): Buffer
   matchTemplateCallback(template: Mat, method: number, callback: (...args: any[]) => any): void
   minMaxLocCallback(callback: (...args: any[]) => any): void
+  thresholdCallback(thresh: number, maxval: number, typ: number, callback: (...args: any[]) => any): void
+  matchTemplateAllCallback(template: Mat, method: number, score: number, nmsThreshold: number, callback: (...args: any[]) => any): void
   release(): void
+}
+export type DNN = Dnn
+export declare class Dnn {
+  constructor()
+  nmsBoxes(bboxes: Array<Rect>, scores: Array<number>, scoreThreshold: number, nmsThreshold: number, callback: (...args: any[]) => any): void
 }

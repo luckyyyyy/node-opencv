@@ -7,13 +7,21 @@ export interface Size {
   width: number
   height: number
 }
+export interface Point {
+  x: number
+  y: number
+}
 export interface MinMaxResult {
   minVal: number
   maxVal: number
-  minX: number
-  minY: number
-  maxX: number
-  maxY: number
+  minLoc: Point
+  maxLoc: Point
+}
+export interface Rect {
+  x: number
+  y: number
+  width: number
+  height: number
 }
 export declare function getTickFrequency(): number
 export declare function getBuildInformation(): string
@@ -24,6 +32,9 @@ export declare function imreadAsync(path: string): Promise<Mat>
 export declare function imdecode(buffer: Buffer): Mat
 export declare function imdecodeCallback(buffer: Buffer, callback: (...args: any[]) => any): void
 export declare function imdecodeAsync(buffer: Buffer): Promise<Mat>
+export declare function imencode(ext: string, mat: JSMat): Buffer
+export declare function imencodeCallback(ext: string, mat: JSMat, callback: (...args: any[]) => any): void
+export declare function imencodeAsync(ext: string, mat: JSMat): Promise<Buffer>
 export const TM_SQDIFF: number
 export const TM_SQDIFF_NORMED: number
 export const TM_CCORR: number
@@ -50,9 +61,16 @@ export declare class Mat {
   get cols(): number
   get size(): Size
   get data(): Buffer
+  matchTemplateAllCallback(template: Mat, method: number, score: number, nmsThreshold: number, callback: (...args: any[]) => any): void
+  matchTemplateAllAsync(template: Mat, method: number, score: number, nmsThreshold: number): Promise<Array<Rect>>
   matchTemplateCallback(template: Mat, method: number, callback: (...args: any[]) => any): void
-  matchTemplateAsync(template: Mat, method: number): Promise<MinMaxResult>
+  matchTemplateAsync(template: Mat, method: number): Promise<Mat>
   minMaxLocCallback(callback: (...args: any[]) => any): void
   minMaxLocAsync(): Promise<MinMaxResult>
   release(): void
+}
+export type DNN = Dnn
+export declare class Dnn {
+  constructor()
+  nmsBoxes(bboxes: Array<Rect>, scores: Array<number>, scoreThreshold: number, nmsThreshold: number, callback: (...args: any[]) => any): void
 }

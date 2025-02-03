@@ -4,7 +4,7 @@ use napi::{
 };
 use opencv::{
   core::Vector,
-  imgcodecs::{imdecode, imread, IMREAD_COLOR},
+  imgcodecs::{imdecode, imencode, imread, IMREAD_COLOR},
   prelude::*,
 };
 use crate::{JSMat, OpenCVError};
@@ -22,6 +22,38 @@ pub fn get_build_information() -> String {
 #[napi]
 pub fn get_tick_count() -> i64 {
   opencv::core::get_tick_count().expect("Failed to get tick count")
+}
+
+#[napi(js_name = "imencode")]
+pub fn imencode_sync(ext: String, img: &JSMat) -> Result<Buffer> {
+    let mut buf = Vector::new();
+    opencv::imgcodecs::imencode(&ext, &img.mat, &mut buf, &Vector::new())
+        .map_err(OpenCVError)?;
+    Ok(Buffer::from(buf.to_vec()))
+}
+
+#[napi]
+pub fn imencode_callback(
+    ext: String,
+    #[napi(ts_arg_type = "JSMat")] mat: &JSMat,
+    callback: JsFunction
+) -> Result<()> {
+    let tsfn: ThreadsafeFunction<Result<Buffer>> =
+        callback.create_threadsafe_function(0, |ctx| Ok(vec![ctx.value]))?;
+
+    let mat = mat.mat.clone();
+
+    std::thread::spawn(move || {
+        let mut buf = Vector::new();
+        let result = match imencode(&ext, &mat, &mut buf, &Vector::new()) {
+            Ok(_) => Ok(Buffer::from(buf.to_vec())),
+            Err(e) => Err(Error::from(OpenCVError(e)))
+        };
+
+        tsfn.call(Ok(result), ThreadsafeFunctionCallMode::Blocking);
+    });
+
+    Ok(())
 }
 
 #[napi(js_name = "imread")]

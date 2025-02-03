@@ -23,6 +23,5 @@
     "build": "napi build --release",
     "build:debug": "napi build --platform",
     "test": "node demo/test.js"
-  },
-  "packageManager": "yarn@4.6.0"
+  }
 }

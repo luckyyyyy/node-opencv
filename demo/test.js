@@ -14,8 +14,8 @@ function createWorker() {
 }
 
 async function main() {
-  const full = await fs.readFile('./demo/full.jpg');
-  const image = await fs.readFile('./demo/1.jpg');
+  const full = await fs.readFile('./demo/20250123-112635.png');
+  const image = await fs.readFile('./demo/20250123-112630.png');
   try {
     const a = cv.imdecode(Buffer.from('hello world'));
   } catch (error) {
@@ -28,20 +28,29 @@ async function main() {
     cv.imreadAsync('./demo/1.jpg'),
   ]);
 
+
   const matched = await image1.matchTemplateAsync(image2, cv.TM_CCOEFF_NORMED);
-  const minMax = await matched.minMaxLocAsync();
+  console.time('matchTemplateAllAsync')
+  const result1 = await image1.matchTemplateAllAsync(image2, cv.TM_CCOEFF_NORMED, 0.8, 0.1);
+  console.log(result1)
+  const result = await image3.matchTemplateAllAsync(image4, cv.TM_CCOEFF_NORMED, 0.8, 0.1);
+  console.log(result)
+  console.timeEnd('matchTemplateAllAsync')
   // const matched2 = await image3.matchTemplateAsync(image4, cv.TM_CCOEFF_NORMED);
   // const minMax2 = await matched2.minMaxLocAsync();
-  console.log(image1.cols, image3.rows, image2.data, minMax)
+  // console.log(minMax)
+  const minMax2 = await matched.minMaxLocAsync();
+  console.log(minMax2)
+
 
   // console.log(minMax.maxVal * 100);
-  console.log(image2.size)
-  matched.release();
-  // matched2.release();
-  image1.release();
-  image2.release();
-  image3.release();
-  image4.release();
+  // console.log(image2.size)
+  // matched.release();
+  // // matched2.release();
+  // image1.release();
+  // image2.release();
+  // image3.release();
+  // image4.release();
   // console.log(1)
   // console.log(image4)
   // const b =  cv.imread('./full.jpg');
