@@ -22,6 +22,15 @@ export const IMREAD_REDUCED_COLOR_4: number
 export const IMREAD_REDUCED_GRAYSCALE_8: number
 export const IMREAD_REDUCED_COLOR_8: number
 export const IMREAD_IGNORE_ORIENTATION: number
+export const FLIP_HORIZONTAL: number
+export const FLIP_VERTICAL: number
+export const FLIP_BOTH: number
+export interface Rect {
+  x: number
+  y: number
+  width: number
+  height: number
+}
 export declare function getTickFrequency(): number
 export declare function getBuildInformation(): string
 export declare function getTickCount(): number
@@ -39,17 +48,16 @@ export interface Point {
   x: number
   y: number
 }
-export interface Rect {
-  x: number
-  y: number
-  width: number
-  height: number
-}
 export interface MinMaxResult {
   minVal: number
   maxVal: number
   minLoc: Point
   maxLoc: Point
+}
+export type DNN = Dnn
+export declare class Dnn {
+  constructor()
+  nmsBoxes(bboxes: Array<Rect>, scores: Array<number>, scoreThreshold: number, nmsThreshold: number, callback: (...args: any[]) => any): void
 }
 export type JSMat = Mat
 export declare class Mat {
@@ -62,10 +70,10 @@ export declare class Mat {
   minMaxLocCallback(callback: (...args: any[]) => any): void
   thresholdCallback(thresh: number, maxval: number, typ: number, callback: (...args: any[]) => any): void
   matchTemplateAllCallback(template: Mat, method: number, score: number, nmsThreshold: number, callback: (...args: any[]) => any): void
+  flip(flipCode: number): Mat
+  /**
+   * # Safety
+   * This function manually releases the OpenCV Mat. Use with caution to avoid double-free errors.
+   */
   release(): void
-}
-export type DNN = Dnn
-export declare class Dnn {
-  constructor()
-  nmsBoxes(bboxes: Array<Rect>, scores: Array<number>, scoreThreshold: number, nmsThreshold: number, callback: (...args: any[]) => any): void
 }

@@ -195,3 +195,6 @@ Cargo.lock
 !.yarn/versions
 
 *.node
+
+# Test output images
+demo/test_flip_*.jpg

@@ -10,6 +10,12 @@ pub struct JSMat {
   pub(crate) mat: Mat,
 }
 
+impl Default for JSMat {
+  fn default() -> Self {
+    Self::new()
+  }
+}
+
 #[napi(object)]
 pub struct Size {
   pub width: i32,
@@ -178,7 +184,6 @@ impl JSMat {
     nms_threshold: f64,
     callback: JsFunction,
   ) -> napi::Result<()> {
-
     let tsfn: ThreadsafeFunction<Vec<Rect>> =
       callback.create_threadsafe_function(0, |ctx| Ok(vec![ctx.value]))?;
 
@@ -258,10 +263,7 @@ impl JSMat {
           .collect();
         // release the result mat
 
-        tsfn.call(
-          Ok(filtered_matches),
-          ThreadsafeFunctionCallMode::Blocking,
-        );
+        tsfn.call(Ok(filtered_matches), ThreadsafeFunctionCallMode::Blocking);
       } else {
         tsfn.call(Ok(Vec::new()), ThreadsafeFunctionCallMode::Blocking);
       }
@@ -271,6 +273,16 @@ impl JSMat {
   }
 
   #[napi]
+  pub fn flip(&self, flip_code: i32) -> Result<JSMat> {
+    let mut dst = Mat::default();
+    opencv::core::flip(&self.mat, &mut dst, flip_code)
+      .map_err(|e| Error::new(Status::GenericFailure, e.to_string()))?;
+    Ok(JSMat { mat: dst })
+  }
+
+  #[napi]
+  /// # Safety
+  /// This function manually releases the OpenCV Mat. Use with caution to avoid double-free errors.
   pub unsafe fn release(&mut self) {
     let _ = self.mat.release();
   }

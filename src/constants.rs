@@ -54,3 +54,13 @@ pub const IMREAD_REDUCED_COLOR_8: i32 = opencv::imgcodecs::IMREAD_REDUCED_COLOR_
 
 #[napi]
 pub const IMREAD_IGNORE_ORIENTATION: i32 = opencv::imgcodecs::IMREAD_IGNORE_ORIENTATION;
+
+// Flip codes for cv::core::flip
+#[napi]
+pub const FLIP_HORIZONTAL: i32 = 1;
+
+#[napi]
+pub const FLIP_VERTICAL: i32 = 0;
+
+#[napi]
+pub const FLIP_BOTH: i32 = -1;

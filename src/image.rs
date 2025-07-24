@@ -1,3 +1,4 @@
+use crate::{JSMat, OpenCVError};
 use napi::{
   bindgen_prelude::*,
   threadsafe_function::{ThreadsafeFunction, ThreadsafeFunctionCallMode},
@@ -7,7 +8,6 @@ use opencv::{
   imgcodecs::{imdecode, imencode, imread, IMREAD_COLOR},
   prelude::*,
 };
-use crate::{JSMat, OpenCVError};
 
 #[napi]
 pub fn get_tick_frequency() -> f64 {
@@ -26,34 +26,33 @@ pub fn get_tick_count() -> i64 {
 
 #[napi(js_name = "imencode")]
 pub fn imencode_sync(ext: String, img: &JSMat) -> Result<Buffer> {
-    let mut buf = Vector::new();
-    opencv::imgcodecs::imencode(&ext, &img.mat, &mut buf, &Vector::new())
-        .map_err(OpenCVError)?;
-    Ok(Buffer::from(buf.to_vec()))
+  let mut buf = Vector::new();
+  opencv::imgcodecs::imencode(&ext, &img.mat, &mut buf, &Vector::new()).map_err(OpenCVError)?;
+  Ok(Buffer::from(buf.to_vec()))
 }
 
 #[napi]
 pub fn imencode_callback(
-    ext: String,
-    #[napi(ts_arg_type = "JSMat")] mat: &JSMat,
-    callback: JsFunction
+  ext: String,
+  #[napi(ts_arg_type = "JSMat")] mat: &JSMat,
+  callback: JsFunction,
 ) -> Result<()> {
-    let tsfn: ThreadsafeFunction<Result<Buffer>> =
-        callback.create_threadsafe_function(0, |ctx| Ok(vec![ctx.value]))?;
+  let tsfn: ThreadsafeFunction<Result<Buffer>> =
+    callback.create_threadsafe_function(0, |ctx| Ok(vec![ctx.value]))?;
 
-    let mat = mat.mat.clone();
+  let mat = mat.mat.clone();
 
-    std::thread::spawn(move || {
-        let mut buf = Vector::new();
-        let result = match imencode(&ext, &mat, &mut buf, &Vector::new()) {
-            Ok(_) => Ok(Buffer::from(buf.to_vec())),
-            Err(e) => Err(Error::from(OpenCVError(e)))
-        };
+  std::thread::spawn(move || {
+    let mut buf = Vector::new();
+    let result = match imencode(&ext, &mat, &mut buf, &Vector::new()) {
+      Ok(_) => Ok(Buffer::from(buf.to_vec())),
+      Err(e) => Err(Error::from(OpenCVError(e))),
+    };
 
-        tsfn.call(Ok(result), ThreadsafeFunctionCallMode::Blocking);
-    });
+    tsfn.call(Ok(result), ThreadsafeFunctionCallMode::Blocking);
+  });
 
-    Ok(())
+  Ok(())
 }
 
 #[napi(js_name = "imread")]
