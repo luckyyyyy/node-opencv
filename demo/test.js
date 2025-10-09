@@ -1,4 +1,4 @@
-const cv = require('../main.js');
+const cv = require('../index.js');
 const fs = require('fs/promises');
 const { Worker } = require('worker_threads');
 const path = require('path');
@@ -22,10 +22,10 @@ async function main() {
     console.log('test error',error.message)
   }
   const [image1, image2, image3, image4] = await Promise.all([
-    cv.imdecodeAsync(full),
-    cv.imdecodeAsync(image),
-    cv.imreadAsync('./demo/full.jpg'),
-    cv.imreadAsync('./demo/1.jpg'),
+    cv.imdecode(full),
+    cv.imdecode(image),
+    cv.imread('./demo/full.jpg'),
+    cv.imread('./demo/1.jpg'),
   ]);
 
 
@@ -55,7 +55,7 @@ async function main() {
   // console.log(image4)
   // const b =  cv.imread('./full.jpg');
   // const c =  cv.imread('./1.jpg');
-  // const a =  await b.matchTemplateAsync(c, cv.TM_CCOEFF_NORMED);
+  // const a =  await b.matchTemplate(c, cv.TM_CCOEFF_NORMED);
   // b.release();
   // c.release();
   // a.release();
@@ -66,9 +66,9 @@ main().catch(console.error);
 // }, 50);
 
 // setInterval(() => {
-  for (let i = 0; i < 5; i++) {
-    createWorker();
-  }
+  // for (let i = 0; i < 5; i++) {
+  //   createWorker();
+  // }
 // }, 3000);
 
 
