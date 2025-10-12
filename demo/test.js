@@ -17,10 +17,11 @@ async function main() {
   const full = await fs.readFile('./demo/20250123-112635.png');
   const image = await fs.readFile('./demo/20250123-112630.png');
   try {
-    const a = cv.imdecode(Buffer.from('hello world'));
+    const a = await cv.imdecode(Buffer.from('hello world'));
   } catch (error) {
     console.log('test error',error.message)
   }
+
   const [image1, image2, image3, image4] = await Promise.all([
     cv.imdecode(full),
     cv.imdecode(image),
@@ -29,17 +30,17 @@ async function main() {
   ]);
 
 
-  const matched = await image1.matchTemplateAsync(image2, cv.TM_CCOEFF_NORMED);
-  console.time('matchTemplateAllAsync')
-  const result1 = await image1.matchTemplateAllAsync(image2, cv.TM_CCOEFF_NORMED, 0.8, 0.1);
+  const matched = await image1.matchTemplate(image2, cv.TM_CCOEFF_NORMED);
+  console.time('matchTemplateAll')
+  const result1 = await image1.matchTemplateAll(image2, cv.TM_CCOEFF_NORMED, 0.8, 0.1);
   console.log(result1)
-  const result = await image3.matchTemplateAllAsync(image4, cv.TM_CCOEFF_NORMED, 0.8, 0.1);
+  const result = await image3.matchTemplateAll(image4, cv.TM_CCOEFF_NORMED, 0.8, 0.1);
   console.log(result)
-  console.timeEnd('matchTemplateAllAsync')
-  // const matched2 = await image3.matchTemplateAsync(image4, cv.TM_CCOEFF_NORMED);
-  // const minMax2 = await matched2.minMaxLocAsync();
+  console.timeEnd('matchTemplateAll')
+  // const matched2 = await image3.matchTemplate(image4, cv.TM_CCOEFF_NORMED);
+  // const minMax2 = await matched2.minMaxLoc();
   // console.log(minMax)
-  const minMax2 = await matched.minMaxLocAsync();
+  const minMax2 = await matched.minMaxLoc();
   console.log(minMax2)
 
 
