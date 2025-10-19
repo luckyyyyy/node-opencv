@@ -171,11 +171,6 @@ export interface Point {
   y: number
 }
 
-export interface Point {
-  x: number
-  y: number
-}
-
 export interface Rect {
   x: number
   y: number
@@ -183,12 +178,7 @@ export interface Rect {
   height: number
 }
 
-export interface Rect {
-  x: number
-  y: number
-  width: number
-  height: number
-}
+export type Contour = Array<Point>
 
 export const RETR_CCOMP: number
 
