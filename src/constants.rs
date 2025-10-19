@@ -54,3 +54,68 @@ pub const IMREAD_REDUCED_COLOR_8: i32 = opencv::imgcodecs::IMREAD_REDUCED_COLOR_
 
 #[napi]
 pub const IMREAD_IGNORE_ORIENTATION: i32 = opencv::imgcodecs::IMREAD_IGNORE_ORIENTATION;
+
+// Threshold types
+#[napi]
+pub const THRESH_BINARY: i32 = opencv::imgproc::THRESH_BINARY;
+
+#[napi]
+pub const THRESH_BINARY_INV: i32 = opencv::imgproc::THRESH_BINARY_INV;
+
+#[napi]
+pub const THRESH_TRUNC: i32 = opencv::imgproc::THRESH_TRUNC;
+
+#[napi]
+pub const THRESH_TOZERO: i32 = opencv::imgproc::THRESH_TOZERO;
+
+#[napi]
+pub const THRESH_TOZERO_INV: i32 = opencv::imgproc::THRESH_TOZERO_INV;
+
+#[napi]
+pub const THRESH_OTSU: i32 = opencv::imgproc::THRESH_OTSU;
+
+#[napi]
+pub const THRESH_TRIANGLE: i32 = opencv::imgproc::THRESH_TRIANGLE;
+
+// Adaptive threshold methods
+#[napi]
+pub const ADAPTIVE_THRESH_MEAN_C: i32 = opencv::imgproc::ADAPTIVE_THRESH_MEAN_C;
+
+#[napi]
+pub const ADAPTIVE_THRESH_GAUSSIAN_C: i32 = opencv::imgproc::ADAPTIVE_THRESH_GAUSSIAN_C;
+
+// Contour retrieval modes
+#[napi]
+pub const RETR_EXTERNAL: i32 = opencv::imgproc::RETR_EXTERNAL;
+
+#[napi]
+pub const RETR_LIST: i32 = opencv::imgproc::RETR_LIST;
+
+#[napi]
+pub const RETR_CCOMP: i32 = opencv::imgproc::RETR_CCOMP;
+
+#[napi]
+pub const RETR_TREE: i32 = opencv::imgproc::RETR_TREE;
+
+// Contour approximation methods
+#[napi]
+pub const CHAIN_APPROX_NONE: i32 = opencv::imgproc::CHAIN_APPROX_NONE;
+
+#[napi]
+pub const CHAIN_APPROX_SIMPLE: i32 = opencv::imgproc::CHAIN_APPROX_SIMPLE;
+
+#[napi]
+pub const CHAIN_APPROX_TC89_L1: i32 = opencv::imgproc::CHAIN_APPROX_TC89_L1;
+
+#[napi]
+pub const CHAIN_APPROX_TC89_KCOS: i32 = opencv::imgproc::CHAIN_APPROX_TC89_KCOS;
+
+// Rotate codes
+#[napi]
+pub const ROTATE_90_CLOCKWISE: i32 = opencv::core::ROTATE_90_CLOCKWISE as i32;
+
+#[napi]
+pub const ROTATE_180: i32 = opencv::core::ROTATE_180 as i32;
+
+#[napi]
+pub const ROTATE_90_COUNTERCLOCKWISE: i32 = opencv::core::ROTATE_90_COUNTERCLOCKWISE as i32;

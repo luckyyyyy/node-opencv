@@ -20,6 +20,89 @@ export declare class Mat {
 }
 export type JSMat = Mat
 
+export const ADAPTIVE_THRESH_GAUSSIAN_C: number
+
+export const ADAPTIVE_THRESH_MEAN_C: number
+
+/**
+ * Apply adaptive threshold to an array.
+ *
+ * # Arguments
+ * * `src` - Source 8-bit single-channel image
+ * * `max_value` - Non-zero value assigned to pixels for which the condition is satisfied
+ * * `adaptive_method` - Adaptive thresholding algorithm (ADAPTIVE_THRESH_MEAN_C or ADAPTIVE_THRESH_GAUSSIAN_C)
+ * * `threshold_type` - Thresholding type (THRESH_BINARY or THRESH_BINARY_INV)
+ * * `block_size` - Size of pixel neighborhood used to calculate threshold (must be odd and greater than 1)
+ * * `c` - Constant subtracted from the mean or weighted mean
+ */
+export declare function adaptiveThreshold(src: JSMat, maxValue: number, adaptiveMethod: number, thresholdType: number, blockSize: number, c: number, abortSignal?: AbortSignal | undefined | null): Promise<JSMat>
+
+/**
+ * Find edges in an image using the Canny algorithm.
+ *
+ * # Arguments
+ * * `src` - Source image (single-channel 8-bit)
+ * * `threshold1` - First threshold for the hysteresis procedure
+ * * `threshold2` - Second threshold for the hysteresis procedure
+ * * `aperture_size` - Aperture size for the Sobel operator (default: 3)
+ * * `l2_gradient` - Flag indicating whether to use L2 norm for gradient (default: false)
+ */
+export declare function canny(src: JSMat, threshold1: number, threshold2: number, apertureSize?: number | undefined | null, l2Gradient?: boolean | undefined | null, abortSignal?: AbortSignal | undefined | null): Promise<JSMat>
+
+export const CHAIN_APPROX_NONE: number
+
+export const CHAIN_APPROX_SIMPLE: number
+
+export const CHAIN_APPROX_TC89_KCOS: number
+
+export const CHAIN_APPROX_TC89_L1: number
+
+/**
+ * Draw contours on an image.
+ *
+ * # Arguments
+ * * `src` - Destination image
+ * * `contours` - All input contours (array of point arrays)
+ * * `contour_idx` - Contour to draw (-1 means all contours)
+ * * `color` - Color of the contours (Scalar with val0, val1, val2, val3)
+ * * `thickness` - Thickness of lines the contours are drawn with (negative value fills the contour)
+ */
+export declare function drawContours(src: JSMat, contours: Array<Contour>, contourIdx: number, color: Scalar, thickness?: number | undefined | null, abortSignal?: AbortSignal | undefined | null): Promise<JSMat>
+
+/**
+ * Find contours in a binary image.
+ *
+ * # Arguments
+ * * `src` - Source 8-bit single-channel image (non-zero pixels are treated as 1s)
+ * * `mode` - Contour retrieval mode (RETR_EXTERNAL, RETR_LIST, RETR_CCOMP, RETR_TREE)
+ * * `method` - Contour approximation method (CHAIN_APPROX_NONE, CHAIN_APPROX_SIMPLE, etc.)
+ */
+export declare function findContours(src: JSMat, mode: number, method: number, abortSignal?: AbortSignal | undefined | null): Promise<Array<Contour>>
+
+/**
+ * Flip an image horizontally, vertically, or both.
+ *
+ * # Arguments
+ * * `src` - Source image
+ * * `flip_code` - A flag to specify how to flip the image:
+ *   - 0: flip vertically
+ *   - positive value (e.g., 1): flip horizontally
+ *   - negative value (e.g., -1): flip both horizontally and vertically
+ */
+export declare function flip(src: JSMat, flipCode: number, abortSignal?: AbortSignal | undefined | null): Promise<JSMat>
+
+/**
+ * Apply Gaussian blur to an image.
+ *
+ * # Arguments
+ * * `src` - Source image
+ * * `ksize_width` - Gaussian kernel width (must be positive and odd)
+ * * `ksize_height` - Gaussian kernel height (must be positive and odd)
+ * * `sigma_x` - Gaussian kernel standard deviation in X direction
+ * * `sigma_y` - Gaussian kernel standard deviation in Y direction (default: 0, uses sigma_x)
+ */
+export declare function gaussianBlur(src: JSMat, ksizeWidth: number, ksizeHeight: number, sigmaX: number, sigmaY?: number | undefined | null, abortSignal?: AbortSignal | undefined | null): Promise<JSMat>
+
 export declare function getBuildInformation(): string
 
 export declare function getTickCount(): number
@@ -58,11 +141,34 @@ export const IMREAD_REDUCED_GRAYSCALE_8: number
 
 export const IMREAD_UNCHANGED: number
 
+/**
+ * Check if array elements lie between the elements of two other arrays.
+ *
+ * # Arguments
+ * * `src` - Source array
+ * * `lower_bound` - Array of lower bounds (format: [b, g, r, a])
+ * * `upper_bound` - Array of upper bounds (format: [b, g, r, a])
+ */
+export declare function inRange(src: JSMat, lowerBound: Array<number>, upperBound: Array<number>, abortSignal?: AbortSignal | undefined | null): Promise<JSMat>
+
+/**
+ * Merge several single-channel arrays into a multi-channel array.
+ *
+ * # Arguments
+ * * `mats` - Array of single-channel matrices to be merged
+ */
+export declare function merge(mats: JSMat[], abortSignal?: AbortSignal | undefined | null): Promise<JSMat>
+
 export interface MinMaxResult {
   minVal: number
   maxVal: number
   minLoc: Point
   maxLoc: Point
+}
+
+export interface Point {
+  x: number
+  y: number
 }
 
 export interface Point {
@@ -84,10 +190,65 @@ export interface Rect {
   height: number
 }
 
+export const RETR_CCOMP: number
+
+export const RETR_EXTERNAL: number
+
+export const RETR_LIST: number
+
+export const RETR_TREE: number
+
+/**
+ * Rotate an image by 90, 180, or 270 degrees.
+ *
+ * # Arguments
+ * * `src` - Source image
+ * * `rotate_code` - An enum to specify how to rotate the array:
+ *   - ROTATE_90_CLOCKWISE: Rotate 90 degrees clockwise
+ *   - ROTATE_180: Rotate 180 degrees
+ *   - ROTATE_90_COUNTERCLOCKWISE: Rotate 270 degrees clockwise (90 degrees counterclockwise)
+ */
+export declare function rotate(src: JSMat, rotateCode: number, abortSignal?: AbortSignal | undefined | null): Promise<JSMat>
+
+export const ROTATE_180: number
+
+export const ROTATE_90_CLOCKWISE: number
+
+export const ROTATE_90_COUNTERCLOCKWISE: number
+
+export interface Scalar {
+  val0: number
+  val1: number
+  val2: number
+  val3: number
+}
+
 export interface Size {
   width: number
   height: number
 }
+
+/**
+ * Split a multi-channel array into several single-channel arrays.
+ *
+ * # Arguments
+ * * `src` - Source multi-channel array
+ */
+export declare function split(src: JSMat, abortSignal?: AbortSignal | undefined | null): Promise<Array<JSMat>>
+
+export const THRESH_BINARY: number
+
+export const THRESH_BINARY_INV: number
+
+export const THRESH_OTSU: number
+
+export const THRESH_TOZERO: number
+
+export const THRESH_TOZERO_INV: number
+
+export const THRESH_TRIANGLE: number
+
+export const THRESH_TRUNC: number
 
 export const TM_CCOEFF: number
 
