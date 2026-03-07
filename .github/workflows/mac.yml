@@ -1,0 +1,111 @@
+name: macOS Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    name: macOS arm64
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install OpenCV and LLVM
+        run: |
+          brew install llvm opencv
+          LLVM_DIR=$(brew --prefix llvm)
+          OPENCV_INC=$(brew --prefix opencv)/include/opencv4
+          echo "LIBCLANG_PATH=${LLVM_DIR}/lib" >> $GITHUB_ENV
+          echo "DYLD_FALLBACK_LIBRARY_PATH=${LLVM_DIR}/lib" >> $GITHUB_ENV
+
+      - name: Diagnostics - print header content
+        run: |
+          OPENCV_INC=$(brew --prefix opencv)/include/opencv4
+          echo "=== OpenCV version ==="
+          pkg-config --modversion opencv4 2>/dev/null || true
+          echo "=== RotatedRect class ==="
+          awk '/^class CV_EXPORTS.*RotatedRect/{p=1} p; /^};/{p=0}' \
+            "$OPENCV_INC/opencv2/core/types.hpp" | head -40
+          echo "=== DMatch class ==="
+          awk '/^class CV_EXPORTS.*DMatch/{p=1} p; /^};/{p=0}' \
+            "$OPENCV_INC/opencv2/core/types.hpp" | head -40
+          echo "=== TermCriteria isValid ==="
+          grep -n -A8 "isValid" "$OPENCV_INC/opencv2/core/types.hpp" | head -20
+          echo "=== NMSBoxes signature ==="
+          grep -n "NMSBoxes" "$OPENCV_INC/opencv2/dnn/dnn.hpp" | head -8
+          echo "=== drawMatches char ==="
+          grep -n "drawMatches" "$OPENCV_INC/opencv2/features2d.hpp" | head -5
+
+      - name: Install npm dependencies
+        run: npm install --ignore-scripts
+
+      - name: Patch crate and headers
+        run: |
+          cargo fetch
+          CRATE=$(find ~/.cargo/registry/src -name "opencv-0.98.*" -maxdepth 2 -type d | head -1)
+          OPENCV_INC=$(brew --prefix opencv)/include/opencv4
+          echo "Crate: $CRATE"
+
+          sed -i '' '/input_output_array_vector! { UMat/d' "$CRATE/src/manual/core/mat.rs"
+
+          perl -i -pe 's/\bCV_WRAP\b\s+//g if /boundingRect2f|isValid/' \
+            "$OPENCV_INC/opencv2/core/types.hpp" 2>/dev/null || true
+
+          perl -i -0pe \
+            's/(class CV_EXPORTS RotatedRect.*?)(\bCV_WRAP\b\s+)(void points|Rect boundingRect|Rect_<float> boundingRect2f)/$1$3/gse' \
+            "$OPENCV_INC/opencv2/core/types.hpp" 2>/dev/null || true
+
+          perl -i -0pe 's/inline\s+bool\s+isValid\(\)\s+const\s*\{[^}]*\}/bool isValid() const;/s' \
+            "$OPENCV_INC/opencv2/core/types.hpp" 2>/dev/null || true
+
+          perl -i -0pe 's/const\s+std::vector<std::vector<char>>/const std::vector<std::vector<int8_t>>/sg' \
+            "$OPENCV_INC/opencv2/features2d.hpp" 2>/dev/null || true
+
+          if [ -f "$OPENCV_INC/opencv2/tracking.hpp" ]; then
+            printf '%s\n' '#pragma once' > "$OPENCV_INC/opencv2/tracking.hpp"
+            rm -rf "$OPENCV_INC/opencv2/tracking"
+          fi
+
+          perl -i -0pe 's/CV_WRAP\s+static\s+bool\s+waitAny[^;]+;//sg' \
+            "$OPENCV_INC/opencv2/videoio.hpp" 2>/dev/null || true
+
+          STUBS="$OPENCV_INC/opencv2/ocvrs_4_11_stubs.hpp"
+          printf '%s\n' \
+            '#pragma once' \
+            '#ifdef OCVRS_PARSING_HEADERS' \
+            '#include <opencv2/core.hpp>' \
+            'CV_EXPORTS_W void _f32(const std::vector<float>& a, CV_OUT std::vector<float>& b);' \
+            'CV_EXPORTS_W void _i32(const std::vector<int>& a, CV_OUT std::vector<int>& b);' \
+            'CV_EXPORTS_W void _r2d(const std::vector<cv::Rect2d>& a);' \
+            'CV_EXPORTS_W void _vvf(const std::vector<std::vector<float>>& a);' \
+            'CV_EXPORTS_W void _vvi(const std::vector<std::vector<int>>& a);' \
+            '#endif' > "$STUBS"
+          echo '#include <opencv2/ocvrs_4_11_stubs.hpp>' >> "$CRATE/src_cpp/core.hpp"
+          printf '%s\n' \
+            '#ifdef OCVRS_PARSING_HEADERS' \
+            '#include <opencv2/dnn/dnn.hpp>' \
+            'CV_EXPORTS_W void _bknd(const std::vector<cv::Ptr<cv::dnn::BackendNode>>& a);' \
+            '#endif' >> "$CRATE/src_cpp/dnn.hpp"
+
+          echo "=== After patch RotatedRect ==="
+          awk '/^class CV_EXPORTS.*RotatedRect/{p=1} p; /^};/{p=0}' \
+            "$OPENCV_INC/opencv2/core/types.hpp" | head -30
+
+      - name: Build (debug)
+        run: npm run build:debug
+
+      - name: Run tests
+        run: npm test

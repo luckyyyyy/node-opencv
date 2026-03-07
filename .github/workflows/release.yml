@@ -1,0 +1,204 @@
+name: Release
+
+# Triggered by version tags (e.g. v1.0.0) only — not on every main push.
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  # ── Build prebuilt binaries for each platform ─────────────────────────────
+  build:
+    name: Build (${{ matrix.target }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+            node-file: node-opencv-rs.linux-x64-gnu.node
+
+          - target: aarch64-apple-darwin
+            os: macos-latest
+            node-file: node-opencv-rs.darwin-arm64.node
+
+          - target: x86_64-pc-windows-msvc
+            os: windows-latest
+            node-file: node-opencv-rs.win32-x64-msvc.node
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install Linux dependencies
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake libopencv-dev llvm clang libclang-dev
+          echo "LIBCLANG_PATH=/usr/lib/x86_64-linux-gnu" >> $GITHUB_ENV
+
+      - name: Install macOS dependencies
+        if: matrix.os == 'macos-latest'
+        run: |
+          # brew install opencv gives 4.11.x — use it for correct RPATH
+          # brew install llvm for clang that can parse C++17 OpenCV headers
+          brew install llvm opencv
+          OPENCV_INC=$(brew --prefix opencv)/include/opencv4
+          LLVM_DIR=$(brew --prefix llvm)
+          echo "LIBCLANG_PATH=${LLVM_DIR}/lib" >> $GITHUB_ENV
+          echo "DYLD_FALLBACK_LIBRARY_PATH=${LLVM_DIR}/lib" >> $GITHUB_ENV
+
+          # ── Patch 1: Remove RotatedRect::boundingRect2f (new in 4.11.x)
+          # The binding generator generates `self.as_raw_RotatedRect()` for this
+          # new method but RotatedRect is a simple struct type without as_raw_X.
+          # Actual format: "    Rect_<float> boundingRect2f() const;"
+          perl -i -pe '/boundingRect2f/ and $_ = ""' \
+            "$OPENCV_INC/opencv2/core/types.hpp" 2>/dev/null || true
+
+          # ── Patch 2: Remove TermCriteria::isValid (new in 4.11.x, same issue)
+          # isValid is an inline function with a body, not just a declaration.
+          # Actual format: "    inline bool isValid() const\n    {\n ...\n    }"
+          perl -i -0pe 's/[ \t]*inline\s+bool\s+isValid\(\)\s+const[^{]*\{[^}]*\}//s' \
+            "$OPENCV_INC/opencv2/core/types.hpp" 2>/dev/null || true
+
+          # ── Patch 3: Fix drawMatches signature — change vector<vector<char>> to
+          # vector<vector<int8_t>> so binding generator emits as_raw_VectorOfVectorOfi8
+          # (generated) rather than as_raw_VectorOfVectorOfc_char (not generated).
+          perl -i -0pe \
+            's/const\s+std::vector<std::vector<char>>/const std::vector<std::vector<int8_t>>/sg' \
+            "$OPENCV_INC/opencv2/features2d.hpp" 2>/dev/null || true
+
+          # ── Patch 4: Stub tracking.hpp — can't emit VectorExtern for
+          # Ptr<Detail_TrackerSamplerAlgorithm> added in 4.10+
+          if [ -f "$OPENCV_INC/opencv2/tracking.hpp" ]; then
+            echo '#pragma once // stubbed for opencv-rust 0.98.1 compat' \
+              > "$OPENCV_INC/opencv2/tracking.hpp"
+            rm -rf "$OPENCV_INC/opencv2/tracking"
+          fi
+
+          # ── Patch 5: Remove VideoCapture::waitAny (added in 4.10+)
+          perl -i -0pe \
+            's/CV_WRAP\s+static\s+bool\s+waitAny[^;]+;//sg' \
+            "$OPENCV_INC/opencv2/videoio.hpp" 2>/dev/null || true
+
+      - name: Install Windows dependencies
+        if: matrix.os == 'windows-latest'
+        shell: pwsh
+        run: |
+          $url = "https://github.com/opencv/opencv/releases/download/4.10.0/opencv-4.10.0-windows.exe"
+          Invoke-WebRequest -Uri $url -OutFile "opencv.exe" -TimeoutSec 600
+          Start-Process -FilePath "opencv.exe" -ArgumentList "-y -o`"D:`"" -Wait
+          echo "OPENCV_INCLUDE_PATHS=D:\opencv\build\include" | Out-File -FilePath $env:GITHUB_ENV -Append
+          echo "OPENCV_LINK_LIBS=opencv_world4100" | Out-File -FilePath $env:GITHUB_ENV -Append
+          echo "OPENCV_LINK_PATHS=D:\opencv\build\x64\vc16\lib" | Out-File -FilePath $env:GITHUB_ENV -Append
+          echo "D:\opencv\build\x64\vc16\bin" | Out-File -FilePath $env:GITHUB_PATH -Append
+
+      - name: Install npm dependencies
+        run: npm install --ignore-scripts
+
+      - name: Patch opencv crate for OpenCV 4.11.x (macOS only)
+        if: matrix.os == 'macos-latest'
+        run: |
+          cargo fetch
+          CRATE=$(find ~/.cargo/registry/src -path "*/opencv-0.98.1" -type d 2>/dev/null | head -1)
+          [ -n "$CRATE" ] || { echo "ERROR: opencv-0.98.1 crate not found"; exit 1; }
+
+          # Remove input_output_array_vector! { UMat } — VectorExtern<UMat> is
+          # never generated by the binding generator with OpenCV 4.11.x headers.
+          # Our code does not use UMat vectors so this is safe to remove.
+          sed -i '' '/input_output_array_vector! { UMat/d' \
+            "$CRATE/src/manual/core/mat.rs"
+
+          # Add a stub header that forces the binding generator to emit
+          # VectorExtern implementations for primitive and geometric types
+          # that are referenced in generated dnn.rs / features2d.rs but whose
+          # vector typedef declarations were removed / changed in OpenCV 4.11.x.
+          STUBS="$(brew --prefix opencv)/include/opencv4/opencv2/ocvrs_4_11_stubs.hpp"
+          printf '%s\n' \
+            '#pragma once' \
+            '#ifdef OCVRS_PARSING_HEADERS' \
+            '#include <opencv2/core.hpp>' \
+            '// Force VectorExtern generation for types used in generated dnn/core code' \
+            'CV_EXPORTS_W void _ocvrs_f32_stub(const std::vector<float>& a, CV_OUT std::vector<float>& b);' \
+            'CV_EXPORTS_W void _ocvrs_i32_stub(const std::vector<int>& a,   CV_OUT std::vector<int>& b);' \
+            'CV_EXPORTS_W void _ocvrs_rect2d_stub(const std::vector<cv::Rect2d>& a);' \
+            'CV_EXPORTS_W void _ocvrs_vvf32_stub(const std::vector<std::vector<float>>& a);' \
+            'CV_EXPORTS_W void _ocvrs_vvi32_stub(const std::vector<std::vector<int>>& a);' \
+            '#endif' > "$STUBS"
+          echo '#include <opencv2/ocvrs_4_11_stubs.hpp>' \
+            >> "$CRATE/src_cpp/core.hpp"
+          printf '%s\n' \
+            '#ifdef OCVRS_PARSING_HEADERS' \
+            '#include <opencv2/dnn/dnn.hpp>' \
+            'CV_EXPORTS_W void _ocvrs_backend_node_stub(const std::vector<cv::Ptr<cv::dnn::BackendNode>>& a);' \
+            '#endif' >> "$CRATE/src_cpp/dnn.hpp"
+
+      - name: Build (release)
+        run: npm run build
+
+      - name: Smoke test
+        run: node -e "const cv = require('.'); if (typeof cv.Mat !== 'function') process.exit(1); console.log('Mat OK');"
+
+      - name: Upload binary artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.node-file }}
+          path: ${{ matrix.node-file }}
+          if-no-files-found: error
+          retention-days: 1
+
+  # ── Publish to npm after all binaries are built ───────────────────────────
+  publish:
+    name: Publish to npm
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install npm dependencies (no build)
+        run: npm install --ignore-scripts
+
+      - name: Download all binary artifacts
+        uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+          path: .
+
+      - name: List downloaded artifacts
+        run: ls -la *.node
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: '*.node'
+
+      - name: Publish to npm
+        run: npm publish --ignore-scripts --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

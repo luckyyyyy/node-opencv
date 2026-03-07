@@ -1,0 +1,6 @@
+tab_spaces = 2
+edition = "2021"
+# MUST be false: `mod mat` must appear before `mod features` in lib.rs so
+# napi-derive sees JSMat's js_name="Mat" before processing features.rs's
+# `#[napi] impl JSMat`. Alphabetical ordering would silently register "JsMat".
+reorder_modules = false

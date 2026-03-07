@@ -1,0 +1,32 @@
+[package]
+edition = "2021"
+name = "node-opencv-rs"
+version = "1.0.0"
+authors = ["luckyyyyy"]
+description = "High-performance OpenCV bindings for Node.js, built in Rust via napi-rs"
+repository = "https://github.com/luckyyyyy/node-opencv"
+keywords = ["opencv", "computer-vision", "image-processing", "napi", "native"]
+categories = ["multimedia::images", "api-bindings"]
+license = "MIT"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+napi = { version = "3.8.3", default-features = false, features = ["napi9"] }
+napi-derive = "3.5.2"
+opencv = { version = "0.98.1", default-features = false, features = [
+  "clang-runtime",
+  "imgproc",
+  "imgcodecs",
+  "features2d",
+  "dnn",
+  "videoio",
+] }
+
+[build-dependencies]
+napi-build = "2.3.1"
+
+[profile.release]
+lto = true
+strip = "symbols"

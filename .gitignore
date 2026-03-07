@@ -1,0 +1,11 @@
+/target
+opencv/
+opencv-rust/
+*.node
+node_modules
+*.xml
+*.png
+*.webp
+*.jpg
+!tests/fixtures/*.png
+!tests/fixtures/*.jpg

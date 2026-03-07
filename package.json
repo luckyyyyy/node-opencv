@@ -1,0 +1,55 @@
+{
+  "name": "node-opencv-rs",
+  "version": "1.0.0",
+  "description": "High-performance OpenCV bindings for Node.js, built in Rust via napi-rs",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "keywords": [
+    "opencv",
+    "computer-vision",
+    "image-processing",
+    "rust",
+    "napi",
+    "native",
+    "mat",
+    "dnn",
+    "video",
+    "feature-detection"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/luckyyyyy/node-opencv.git"
+  },
+  "bugs": {
+    "url": "https://github.com/luckyyyyy/node-opencv/issues"
+  },
+  "homepage": "https://github.com/luckyyyyy/node-opencv#readme",
+  "author": "luckyyyyy",
+  "license": "MIT",
+  "napi": {
+    "binaryName": "node-opencv-rs",
+    "target": {
+      "defaults": false
+    }
+  },
+  "files": [
+    "*.node",
+    "index.d.ts",
+    "index.js"
+  ],
+  "devDependencies": {
+    "@napi-rs/cli": "^3.2.0"
+  },
+  "engines": {
+    "node": ">= 18"
+  },
+  "scripts": {
+    "prepare": "npm run build:debug",
+    "build": "napi build --platform --release",
+    "build:debug": "napi build --platform",
+    "test": "node --test tests/*.test.js"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
