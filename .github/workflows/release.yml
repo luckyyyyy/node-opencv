@@ -49,7 +49,7 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt-get update
-          sudo apt-get install -y cmake libopencv-dev llvm clang libclang-dev
+          sudo apt-get install -y cmake libopencv-dev llvm clang libclang-dev patchelf
           echo "LIBCLANG_PATH=/usr/lib/x86_64-linux-gnu" >> $GITHUB_ENV
 
       - name: Install Miniforge for macOS
@@ -93,6 +93,18 @@ jobs:
       - name: Build (release)
         run: npm run build
 
+      - name: Bundle OpenCV libs (Linux / macOS)
+        if: matrix.os != 'windows-latest'
+        run: bash scripts/bundle-libs.sh ${{ matrix.node-file }}
+
+      - name: Bundle OpenCV DLLs (Windows)
+        if: matrix.os == 'windows-latest'
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path lib | Out-Null
+          Copy-Item "D:\opencv\build\x64\vc16\bin\opencv_world4100.dll" lib\
+          Copy-Item "D:\opencv\build\x64\vc16\bin\opencv_videoio_ffmpeg4100_64.dll" lib\ -ErrorAction SilentlyContinue
+
       - name: Smoke test
         run: |
           DYLD_FALLBACK_LIBRARY_PATH="${CONDA_PREFIX_SAVED:-}/lib" \
@@ -102,7 +114,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.node-file }}
-          path: ${{ matrix.node-file }}
+          path: |
+            ${{ matrix.node-file }}
+            lib/
           if-no-files-found: error
           retention-days: 1
 

@@ -9,3 +9,5 @@ node_modules
 *.jpg
 !tests/fixtures/*.png
 !tests/fixtures/*.jpg
+lib/
+

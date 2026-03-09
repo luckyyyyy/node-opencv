@@ -34,6 +34,7 @@
   },
   "files": [
     "*.node",
+    "lib/",
     "index.d.ts",
     "index.js"
   ],

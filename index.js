@@ -6,6 +6,19 @@
 const { createRequire } = require('node:module')
 require = createRequire(__filename)
 
+// On Windows, add the bundled lib\ directory to the DLL search path so that
+// opencv_world*.dll shipped alongside this package is found automatically.
+if (process.platform === 'win32') {
+  try {
+    const path = require('node:path')
+    const libDir = path.join(__dirname, 'lib')
+    if (require('node:fs').existsSync(libDir)) {
+      // process.env.PATH is read by LoadLibrary on Windows.
+      process.env.PATH = libDir + ';' + (process.env.PATH || '')
+    }
+  } catch (_) {}
+}
+
 const { readFileSync } = require('node:fs')
 let nativeBinding = null
 const loadErrors = []
