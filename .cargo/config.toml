@@ -1,0 +1,8 @@
+# Drop dylib entries for modules with no referenced symbols (macOS equivalent of
+# Linux --as-needed). Without this, opencv-rust links ALL detected opencv modules
+# (including all contrib) even though we only use 6 of them.
+[target.aarch64-apple-darwin]
+rustflags = ["-C", "link-arg=-dead_strip_dylibs"]
+
+[target.x86_64-apple-darwin]
+rustflags = ["-C", "link-arg=-dead_strip_dylibs"]
