@@ -185,9 +185,7 @@ struct CvtColorTask {
 impl CvtColorTask {
   fn do_compute(&mut self) -> Result<JSMat> {
     let mut dst = Mat::default();
-    cv_err!(opencv::imgproc::cvt_color(
-      &*self.src, &mut dst, self.code, 0
-    ))?;
+    cv_err!(opencv::imgproc::cvt_color_def(&*self.src, &mut dst, self.code))?;
     Ok(JSMat { mat: Arc::new(dst) })
   }
 }
@@ -227,6 +225,7 @@ struct GaussianBlurTask {
 impl GaussianBlurTask {
   fn do_compute(&mut self) -> Result<JSMat> {
     let mut dst = Mat::default();
+    #[cfg(not(opencv_4_11_or_later))]
     cv_err!(opencv::imgproc::gaussian_blur(
       &*self.src,
       &mut dst,
@@ -234,6 +233,16 @@ impl GaussianBlurTask {
       self.sigma_x,
       self.sigma_y,
       opencv::core::BORDER_DEFAULT
+    ))?;
+    #[cfg(opencv_4_11_or_later)]
+    cv_err!(opencv::imgproc::gaussian_blur(
+      &*self.src,
+      &mut dst,
+      opencv::core::Size::new(self.ksize_width, self.ksize_height),
+      self.sigma_x,
+      self.sigma_y,
+      opencv::core::BORDER_DEFAULT,
+      opencv::core::AlgorithmHint::ALGO_HINT_DEFAULT
     ))?;
     Ok(JSMat { mat: Arc::new(dst) })
   }

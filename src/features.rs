@@ -203,6 +203,7 @@ pub(crate) struct HoughLinesTask {
 impl HoughLinesTask {
   fn do_compute(&mut self) -> Result<Vec<HoughLine>> {
     let mut lines = Mat::default();
+    #[cfg(not(opencv_4_11_or_later))]
     cv_err!(imgproc::hough_lines(
       &*self.src,
       &mut lines,
@@ -213,6 +214,19 @@ impl HoughLinesTask {
       0.0,
       0.0,
       std::f64::consts::PI,
+    ))?;
+    #[cfg(opencv_4_11_or_later)]
+    cv_err!(imgproc::hough_lines(
+      &*self.src,
+      &mut lines,
+      self.rho,
+      self.theta,
+      self.threshold,
+      0.0,
+      0.0,
+      0.0,
+      std::f64::consts::PI,
+      false,
     ))?;
     // hough_lines returns Nx1 CV_32FC2 (rho, theta per element).
     // When no lines are found, OpenCV may leave the output as a default empty

@@ -30,3 +30,6 @@ napi-build = "2.3.1"
 [profile.release]
 lto = true
 strip = "symbols"
+
+[lints.rust]
+unexpected_cfgs = { level = "allow", check-cfg = ['cfg(opencv_4_11_or_later)'] }
