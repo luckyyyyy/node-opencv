@@ -18,6 +18,20 @@ if [[ "$(uname -s)" == "Darwin" ]]; then
   # 1. Read all RPATH entries embedded in the .node binary
   RPATHS=$(otool -l "$NODE_FILE" \
     | awk '/LC_RPATH/{f=1} f && /^ *path /{print $2; f=0}')
+
+  # Fallback: if the binary has no LC_RPATH entries (e.g. opencv-rs linked via
+  # OPENCV_LINK_PATHS without adding -rpath), also search known conda lib dirs
+  # that are available in CI via environment variables.
+  if [[ -z "$RPATHS" ]]; then
+    echo "No LC_RPATH in binary — using env var fallback"
+    [[ -n "${CONDA_PREFIX_SAVED:-}" && -d "${CONDA_PREFIX_SAVED}/lib" ]] && \
+      RPATHS="${CONDA_PREFIX_SAVED}/lib"
+    if [[ -n "${DYLD_FALLBACK_LIBRARY_PATH:-}" ]]; then
+      while IFS= read -r p; do
+        [[ -n "$p" && -d "$p" ]] && RPATHS="${RPATHS}"$'\n'"$p"
+      done < <(echo "$DYLD_FALLBACK_LIBRARY_PATH" | tr ':' '\n')
+    fi
+  fi
   echo "RPATHs: $RPATHS"
 
   # 2. For each @rpath/libopencv_*.dylib, resolve to an absolute path
