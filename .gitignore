@@ -10,4 +10,5 @@ node_modules
 !tests/fixtures/*.png
 !tests/fixtures/*.jpg
 lib/
+_binding.js
 
